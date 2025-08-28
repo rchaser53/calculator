@@ -1,0 +1,110 @@
+# ローン計算機
+
+このプロジェクトは、住宅ローンなどの返済計画を計算するJavaScriptライブラリです。
+
+## 機能
+
+- 月額返済額の計算
+- 年ごとの残高テーブルの表示
+- 総支払額と総利息額の計算
+
+## 使い方
+
+### 基本的な使い方
+
+```javascript
+const { displayLoanCalculation } = require('./loanCalculator');
+
+// ローン金額3000万円、年利1.5%、35年で計算
+displayLoanCalculation(3000000, 1.5, 35);
+```
+
+### 個別の関数を使用する場合
+
+```javascript
+const { calculateMonthlyPayment, calculateYearlyBalance } = require('./loanCalculator');
+
+// 月額返済額のみ計算
+const monthlyPayment = calculateMonthlyPayment(3000000, 1.5, 35);
+console.log(`月額返済額: ${Math.round(monthlyPayment).toLocaleString()}円`);
+
+// 年ごとの詳細データを取得
+const yearlyData = calculateYearlyBalance(3000000, monthlyPayment, 1.5, 35);
+console.log(yearlyData);
+```
+
+### コマンドラインから実行
+
+```bash
+# サンプル計算を実行
+npm start
+
+# インタラクティブモード（対話形式で入力）
+npm run interactive
+
+# 様々な例を確認
+npm run examples
+
+# 基本のサンプル実行
+npm run loan
+```
+
+## 関数リファレンス
+
+### `calculateMonthlyPayment(loanAmount, annualRate, years)`
+
+月額返済額を計算します。
+
+- `loanAmount`: ローン金額（円）
+- `annualRate`: 年利率（%）
+- `years`: 借入期間（年）
+- 戻り値: 月額返済額（円）
+
+### `calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years)`
+
+年ごとの残高情報を計算します。
+
+- `loanAmount`: ローン金額（円）
+- `monthlyPayment`: 月額返済額（円）
+- `annualRate`: 年利率（%）
+- `years`: 借入期間（年）
+- 戻り値: 年ごとの返済情報の配列
+
+### `displayLoanCalculation(loanAmount, annualRate, years)`
+
+ローン計算結果を見やすい表形式で表示します。
+
+- `loanAmount`: ローン金額（円）
+- `annualRate`: 年利率（%）
+- `years`: 借入期間（年）
+
+## 出力例
+
+```
+================================================================================
+                            ローン計算結果
+================================================================================
+ローン金額: 30,000,000円
+年利率: 1.5%
+借入期間: 35年
+月額返済額: 91,855円
+
+年ごとの返済計画:
+--------------------------------------------------------------------------------
+年 |   年間返済額   |   元本返済額   |   利息支払額   |     残債額     
+--------------------------------------------------------------------------------
+ 1 |    1,102,260 |      652,136 |      450,124 |   29,347,864
+ 2 |    1,102,260 |      661,916 |      440,344 |   28,685,948
+ 3 |    1,102,260 |      671,844 |      430,416 |   28,014,104
+...
+```
+
+## 計算方法
+
+このライブラリは元利均等返済方式を使用しています。月額返済額は以下の式で計算されます：
+
+```
+月額返済額 = 元本 × (月利率 × (1 + 月利率)^返済回数) / ((1 + 月利率)^返済回数 - 1)
+```
+
+金利が0%の場合は、元本を返済回数で割った金額が月額返済額となります。
