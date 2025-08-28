@@ -64,10 +64,17 @@ async function main() {
       (num) => !isNaN(num) && num > 0 && Number.isInteger(num)
     );
 
+    // 住宅ローン控除の適用確認
+    const hasDeduction = await new Promise((resolve) => {
+      rl.question('住宅ローン控除を適用しますか？ (y/N): ', (answer) => {
+        resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+      });
+    });
+
     console.log('\n計算中...\n');
 
     // 計算結果の表示
-    displayLoanCalculation(loanAmount, annualRate, years);
+    displayLoanCalculation(loanAmount, annualRate, years, hasDeduction);
 
     // 別の計算を行うかの確認
     rl.question('\n別の条件で計算しますか？ (y/N): ', (answer) => {

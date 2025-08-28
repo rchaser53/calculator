@@ -27,14 +27,32 @@ function calculateMonthlyPayment(loanAmount, annualRate, years) {
 }
 
 /**
+ * 住宅ローン控除額を計算する
+ * @param {number} remainingBalance - 年末時点の借入残高
+ * @param {number} year - 何年目か（1から開始）
+ * @param {boolean} hasDeduction - 住宅ローン控除を適用するか
+ * @returns {number} 控除額
+ */
+function calculateLoanDeduction(remainingBalance, year, hasDeduction) {
+  if (!hasDeduction || year > 13) {
+    return 0;
+  }
+  
+  // 借入残高と4500万円のいずれか少ない方の0.7%
+  const deductionBase = Math.min(remainingBalance, 45000000);
+  return deductionBase * 0.007;
+}
+
+/**
  * 年ごとの残金を計算する
  * @param {number} loanAmount - ローン金額（元本）
  * @param {number} monthlyPayment - 月額返済額
  * @param {number} annualRate - 年利率（%）
  * @param {number} years - 借入期間（年）
+ * @param {boolean} hasDeduction - 住宅ローン控除を適用するか
  * @returns {Array} 年ごとの残金情報
  */
-function calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years) {
+function calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years, hasDeduction = false) {
   const monthlyRate = annualRate / 100 / 12; // 月利率
   let remainingBalance = loanAmount;
   const yearlyData = [];
@@ -66,7 +84,8 @@ function calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years) {
       yearlyPayment: monthlyPayment * 12,
       yearlyPrincipal: yearlyPrincipal,
       yearlyInterest: yearlyInterest,
-      remainingBalance: Math.max(0, remainingBalance)
+      remainingBalance: Math.max(0, remainingBalance),
+      loanDeduction: calculateLoanDeduction(Math.max(0, remainingBalance), year, hasDeduction)
     });
 
     if (remainingBalance <= 0) break;
@@ -80,46 +99,70 @@ function calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years) {
  * @param {number} loanAmount - ローン金額（元本）
  * @param {number} annualRate - 年利率（%）
  * @param {number} years - 借入期間（年）
+ * @param {boolean} hasDeduction - 住宅ローン控除を適用するか
  */
-function displayLoanCalculation(loanAmount, annualRate, years) {
+function displayLoanCalculation(loanAmount, annualRate, years, hasDeduction = false) {
   console.log('='.repeat(80));
   console.log('                            ローン計算結果');
   console.log('='.repeat(80));
   
   const monthlyPayment = calculateMonthlyPayment(loanAmount, annualRate, years);
-  const yearlyData = calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years);
+  const yearlyData = calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years, hasDeduction);
 
   // 基本情報の表示
   console.log(`ローン金額: ${loanAmount.toLocaleString()}円`);
   console.log(`年利率: ${annualRate}%`);
   console.log(`借入期間: ${years}年`);
   console.log(`月額返済額: ${Math.round(monthlyPayment).toLocaleString()}円`);
+  if (hasDeduction) {
+    console.log('住宅ローン控除: 適用あり（13年間、年末残高または4500万円の少ない方の0.7%）');
+  }
   console.log('');
 
   // 年ごとの詳細テーブル
   console.log('年ごとの返済計画:');
-  console.log('-'.repeat(80));
-  console.log('年 |   年間返済額   |   元本返済額   |   利息支払額   |     残債額     ');
-  console.log('-'.repeat(80));
+  console.log('-'.repeat(hasDeduction ? 96 : 80));
+  if (hasDeduction) {
+    console.log('年 |   年間返済額   |   元本返済額   |   利息支払額   |     残債額     |   住宅ローン控除');
+  } else {
+    console.log('年 |   年間返済額   |   元本返済額   |   利息支払額   |     残債額     ');
+  }
+  console.log('-'.repeat(hasDeduction ? 96 : 80));
 
   yearlyData.forEach(data => {
-    console.log(
-      `${data.year.toString().padStart(2)} | ` +
-      `${Math.round(data.yearlyPayment).toLocaleString().padStart(12)} | ` +
-      `${Math.round(data.yearlyPrincipal).toLocaleString().padStart(12)} | ` +
-      `${Math.round(data.yearlyInterest).toLocaleString().padStart(12)} | ` +
-      `${Math.round(data.remainingBalance).toLocaleString().padStart(12)}`
-    );
+    if (hasDeduction) {
+      console.log(
+        `${data.year.toString().padStart(2)} | ` +
+        `${Math.round(data.yearlyPayment).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.yearlyPrincipal).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.yearlyInterest).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.remainingBalance).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.loanDeduction).toLocaleString().padStart(14)}`
+      );
+    } else {
+      console.log(
+        `${data.year.toString().padStart(2)} | ` +
+        `${Math.round(data.yearlyPayment).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.yearlyPrincipal).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.yearlyInterest).toLocaleString().padStart(12)} | ` +
+        `${Math.round(data.remainingBalance).toLocaleString().padStart(12)}`
+      );
+    }
   });
 
-  console.log('-'.repeat(80));
+  console.log('-'.repeat(hasDeduction ? 96 : 80));
 
   // 総支払額の計算
   const totalPayments = yearlyData.reduce((sum, data) => sum + data.yearlyPayment, 0);
   const totalInterest = yearlyData.reduce((sum, data) => sum + data.yearlyInterest, 0);
+  const totalDeduction = yearlyData.reduce((sum, data) => sum + data.loanDeduction, 0);
 
   console.log(`総支払額: ${Math.round(totalPayments).toLocaleString()}円`);
   console.log(`総利息額: ${Math.round(totalInterest).toLocaleString()}円`);
+  if (hasDeduction) {
+    console.log(`総控除額: ${Math.round(totalDeduction).toLocaleString()}円`);
+    console.log(`実質負担額: ${Math.round(totalPayments - totalDeduction).toLocaleString()}円`);
+  }
   console.log('='.repeat(80));
 }
 
@@ -130,12 +173,14 @@ if (require.main === module) {
   displayLoanCalculation(3000000, 1.5, 35); // 3000万円、年利1.5%、35年
   
   console.log('\n');
-  displayLoanCalculation(2000000, 2.0, 20); // 2000万円、年利2.0%、20年
+  console.log('住宅ローン控除適用例:');
+  displayLoanCalculation(3000000, 1.5, 35, true); // 住宅ローン控除あり
 }
 
 // 関数をエクスポート
 module.exports = {
   calculateMonthlyPayment,
   calculateYearlyBalance,
-  displayLoanCalculation
+  displayLoanCalculation,
+  calculateLoanDeduction
 };

@@ -13,6 +13,12 @@ console.log('条件: 借入額3500万円、金利1.3%、35年返済');
 displayLoanCalculation(35000000, 1.3, 35);
 console.log('\n' + '='.repeat(80) + '\n');
 
+// 例1-2: 同条件で住宅ローン控除適用
+console.log('例1-2: 同条件で住宅ローン控除適用');
+console.log('条件: 借入額3500万円、金利1.3%、35年返済（住宅ローン控除あり）');
+displayLoanCalculation(35000000, 1.3, 35, true);
+console.log('\n' + '='.repeat(80) + '\n');
+
 // 例2: 短期間・高金利のローン
 console.log('例2: 短期間・高金利のローン');
 console.log('条件: 借入額500万円、金利3.5%、10年返済');
@@ -81,5 +87,13 @@ periods.forEach(period => {
     `${Math.round(savings).toLocaleString().padStart(8)}`
   );
 });
+
+// 例6: 住宅ローン控除の上限効果（4500万円）
+console.log('例6: 住宅ローン控除の上限効果の比較');
+console.log('借入額5000万円の場合（控除上限4500万円）');
+displayLoanCalculation(50000000, 1.3, 35, true);
+
+console.log('\n借入額4000万円の場合（控除上限内）');
+displayLoanCalculation(40000000, 1.3, 35, true);
 
 console.log('\n※ 実際の繰上返済効果の計算は複雑です。詳細は金融機関にご相談ください。');
