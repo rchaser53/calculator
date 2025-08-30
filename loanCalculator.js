@@ -157,6 +157,36 @@ function displayLoanCalculation(loanAmount, annualRate, years, hasDeduction = fa
   const totalInterest = yearlyData.reduce((sum, data) => sum + data.yearlyInterest, 0);
   const totalDeduction = yearlyData.reduce((sum, data) => sum + data.loanDeduction, 0);
 
+  // 住宅ローン控除適用時は13年目終了時点の集計も表示
+  if (hasDeduction) {
+    const data13Years = yearlyData.slice(0, Math.min(13, yearlyData.length));
+    const payments13Years = data13Years.reduce((sum, data) => sum + data.yearlyPayment, 0);
+    const interest13Years = data13Years.reduce((sum, data) => sum + data.yearlyInterest, 0);
+    const deduction13Years = data13Years.reduce((sum, data) => sum + data.loanDeduction, 0);
+    
+    console.log('\n【住宅ローン控除期間終了時点（13年目終了時）の集計】');
+    console.log(`13年間の総支払額: ${Math.round(payments13Years).toLocaleString()}円`);
+    console.log(`13年間の総利息額: ${Math.round(interest13Years).toLocaleString()}円`);
+    console.log(`13年間の総控除額: ${Math.round(deduction13Years).toLocaleString()}円`);
+    console.log(`13年間の実質負担額: ${Math.round(payments13Years - deduction13Years).toLocaleString()}円`);
+    
+    if (yearlyData.length > 13) {
+      const remainingBalance13 = yearlyData[12].remainingBalance; // 13年目終了時の残債
+      console.log(`13年目終了時の残債額: ${Math.round(remainingBalance13).toLocaleString()}円`);
+      
+      // 14年目以降の集計
+      const dataAfter13 = yearlyData.slice(13);
+      const paymentsAfter13 = dataAfter13.reduce((sum, data) => sum + data.yearlyPayment, 0);
+      const interestAfter13 = dataAfter13.reduce((sum, data) => sum + data.yearlyInterest, 0);
+      
+      console.log('\n【14年目以降（控除終了後）の見通し】');
+      console.log(`14年目以降の総支払額: ${Math.round(paymentsAfter13).toLocaleString()}円`);
+      console.log(`14年目以降の総利息額: ${Math.round(interestAfter13).toLocaleString()}円`);
+      console.log(`残り返済期間: ${dataAfter13.length}年`);
+    }
+    console.log('');
+  }
+
   console.log(`総支払額: ${Math.round(totalPayments).toLocaleString()}円`);
   console.log(`総利息額: ${Math.round(totalInterest).toLocaleString()}円`);
   if (hasDeduction) {
