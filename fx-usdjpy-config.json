@@ -1,0 +1,25 @@
+{
+  "account": {
+    "balance": 4500000,
+    "comment": "純資産（円）"
+  },
+  "position": {
+    "pair": "USD/JPY",
+    "side": "buy",
+    "lots": 10,
+    "entryPrice": 147.8,
+    "currentPrice": 147,
+    "comment": "買いポジション：10万通貨"
+  },
+  "settings": {
+    "leverage": 25,
+    "marginCallLevel": 100,
+    "stopOutLevel": 50,
+    "analysis": {
+      "minRate": 145,
+      "maxRate": 155,
+      "step": 0.5,
+      "comment": "分析レンジ設定"
+    }
+  }
+}
