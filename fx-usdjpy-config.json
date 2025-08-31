@@ -3,21 +3,43 @@
     "balance": 4500000,
     "comment": "純資産（円）"
   },
-  "position": {
-    "pair": "USD/JPY",
-    "side": "buy",
-    "lots": 10,
-    "entryPrice": 147.8,
-    "currentPrice": 147,
-    "comment": "買いポジション：10万通貨"
-  },
+  "positions": [
+    {
+      "id": "pos1",
+      "pair": "USD/JPY",
+      "side": "buy",
+      "lots": 10,
+      "entryPrice": 147.8,
+      "entryDate": "2024-01-15",
+      "comment": "初回買いポジション：10万通貨"
+    },
+    {
+      "id": "pos2", 
+      "pair": "USD/JPY",
+      "side": "buy",
+      "lots": 5,
+      "entryPrice": 146.8,
+      "entryDate": "2024-01-20",
+      "comment": "追加買いポジション：5万通貨"
+    },
+    {
+      "id": "pos3",
+      "pair": "USD/JPY",
+      "side": "buy",
+      "lots": 8,
+      "entryPrice": 145.8,
+      "entryDate": "2024-01-25",
+      "comment": "さらなる買い増しポジション：8万通貨"
+    }
+  ],
+  "currentPrice": 147,
   "settings": {
     "leverage": 25,
     "marginCallLevel": 100,
     "stopOutLevel": 50,
     "analysis": {
-      "minRate": 145,
-      "maxRate": 155,
+      "minRate": 140,
+      "maxRate": 150,
       "step": 0.5,
       "comment": "分析レンジ設定"
     }
