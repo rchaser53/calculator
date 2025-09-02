@@ -217,10 +217,15 @@ function displayUsdJpyAnalysisTable(configPath = './fx-usdjpy-config.json') {
     
     // 現在価格での状況
     const currentAnalysis = calculateMarginLevelAtRate(config, currentPrice);
-    console.log(`\n現在価格(${currentPrice.toFixed(2)}円)での状況:`);
+    console.log(`\n現在価格(${currentPrice.toFixed(3)}円)での詳細状況:`);
     console.log(`- 合計含み損益: ${currentAnalysis.totalPnL >= 0 ? '+' : ''}${Math.round(currentAnalysis.totalPnL).toLocaleString()}円`);
     console.log(`- 証拠金維持率: ${currentAnalysis.marginLevel.toFixed(2)}%`);
     console.log(`- 有効証拠金: ${Math.round(currentAnalysis.equity).toLocaleString()}円`);
+    console.log(`- 必要証拠金: ${Math.round(currentAnalysis.requiredMargin).toLocaleString()}円`);
+    
+    // 手動計算での検証
+    const manualRequiredMargin = (currentAnalysis.totalUnits * currentPrice) / settings.leverage;
+    console.log(`- 手動計算検証: ${currentAnalysis.totalUnits.toLocaleString()}通貨 × ${currentPrice}円 ÷ ${settings.leverage} = ${Math.round(manualRequiredMargin).toLocaleString()}円`);
     
     // ポジション別詳細
     console.log('\n=== ポジション別損益詳細 ===');
@@ -230,11 +235,111 @@ function displayUsdJpyAnalysisTable(configPath = './fx-usdjpy-config.json') {
     
     console.log('='.repeat(80));
     
+    // 折れ線グラフの表示
+    displayMarginLevelChart(config, results);
+    
     return results;
     
   } catch (error) {
     console.error('分析実行中にエラーが発生しました:', error.message);
   }
+}
+
+/**
+ * 証拠金維持率の折れ線グラフを表示する（ASCII版）
+ * @param {Object} config - 設定データ
+ * @param {Array} analysisResults - 分析結果配列
+ */
+function displayMarginLevelChart(config, analysisResults) {
+  console.log('\n' + '='.repeat(80));
+  console.log('                    証拠金維持率 推移グラフ');
+  console.log('='.repeat(80));
+  
+  if (!analysisResults || analysisResults.length === 0) {
+    console.log('グラフ表示用のデータがありません。');
+    return;
+  }
+  
+  // Y軸の範囲を決定（証拠金維持率）
+  const marginLevels = analysisResults.map(r => r.marginLevel);
+  const minMargin = Math.min(...marginLevels);
+  const maxMargin = Math.max(...marginLevels);
+  
+  // グラフの設定
+  const graphHeight = 20;
+  const graphWidth = 60;
+  const marginRange = maxMargin - minMargin;
+  
+  console.log(`Y軸: 証拠金維持率 ${minMargin.toFixed(0)}% ～ ${maxMargin.toFixed(0)}%`);
+  console.log(`X軸: USD/JPYレート ${analysisResults[0].rate.toFixed(1)} ～ ${analysisResults[analysisResults.length-1].rate.toFixed(1)}円`);
+  console.log('');
+  
+  // グラフの描画
+  for (let row = graphHeight; row >= 0; row--) {
+    let line = '';
+    
+    // Y軸ラベル
+    const yValue = minMargin + (marginRange * row / graphHeight);
+    line += yValue.toFixed(0).padStart(4) + '% |';
+    
+    // グラフの点をプロット
+    for (let col = 0; col < graphWidth; col++) {
+      const dataIndex = Math.floor((col / (graphWidth - 1)) * (analysisResults.length - 1));
+      const dataPoint = analysisResults[dataIndex];
+      
+      if (dataPoint) {
+        const normalizedY = (dataPoint.marginLevel - minMargin) / marginRange * graphHeight;
+        
+        if (Math.abs(normalizedY - row) < 0.5) {
+          // 重要レベルの表示
+          if (dataPoint.marginLevel <= 50) {
+            line += '\x1b[31m●\x1b[0m'; // 赤（強制決済）
+          } else if (dataPoint.marginLevel <= 100) {
+            line += '\x1b[33m●\x1b[0m'; // 黄（マージンコール）
+          } else if (dataPoint.marginLevel <= 200) {
+            line += '\x1b[36m●\x1b[0m'; // シアン（注意）
+          } else {
+            line += '\x1b[32m●\x1b[0m'; // 緑（安全）
+          }
+        } else {
+          line += ' ';
+        }
+      } else {
+        line += ' ';
+      }
+    }
+    
+    console.log(line);
+  }
+  
+  // X軸ラベル
+  let xAxisLine = '     +';
+  for (let i = 0; i < graphWidth; i++) {
+    xAxisLine += '-';
+  }
+  console.log(xAxisLine);
+  
+  // X軸の値
+  let xLabels = '      ';
+  const numLabels = 5;
+  for (let i = 0; i < numLabels; i++) {
+    const dataIndex = Math.floor((i / (numLabels - 1)) * (analysisResults.length - 1));
+    const rate = analysisResults[dataIndex].rate;
+    const label = rate.toFixed(1);
+    const position = Math.floor((i / (numLabels - 1)) * (graphWidth - label.length));
+    
+    while (xLabels.length < 6 + position) {
+      xLabels += ' ';
+    }
+    xLabels += label;
+  }
+  console.log(xLabels);
+  
+  // 凡例
+  console.log('\n凡例:');
+  console.log('\x1b[31m●\x1b[0m 強制決済レベル (≤50%)   \x1b[33m●\x1b[0m マージンコール (≤100%)');
+  console.log('\x1b[36m●\x1b[0m 注意レベル (≤200%)     \x1b[32m●\x1b[0m 安全レベル (>200%)');
+  console.log('='.repeat(80));
 }
 
 /**

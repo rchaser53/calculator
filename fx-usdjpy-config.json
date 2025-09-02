@@ -17,7 +17,7 @@
       "id": "pos2", 
       "pair": "USD/JPY",
       "side": "buy",
-      "lots": 5,
+      "lots": 10,
       "entryPrice": 146.8,
       "entryDate": "2024-01-20",
       "comment": "追加買いポジション：5万通貨"
@@ -26,7 +26,7 @@
       "id": "pos3",
       "pair": "USD/JPY",
       "side": "buy",
-      "lots": 8,
+      "lots": 10,
       "entryPrice": 145.8,
       "entryDate": "2024-01-25",
       "comment": "さらなる買い増しポジション：8万通貨"
