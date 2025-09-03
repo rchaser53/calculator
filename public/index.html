@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FX証拠金維持率分析ツール - 楽天FX対応</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .risk-danger { color: #dc3545; font-weight: bold; }
+        .risk-warning { color: #fd7e14; font-weight: bold; }
+        .risk-caution { color: #20c997; font-weight: bold; }
+        .risk-safe { color: #198754; font-weight: bold; }
+        .chart-container { 
+            position: relative; 
+            height: 400px; 
+            margin: 20px 0; 
+        }
+        .position-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .metrics-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h2 mb-0">📊 FX証拠金維持率分析ツール</h1>
+                    <div class="badge bg-info fs-6">楽天FX仕様対応</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- データ読み込み中 -->
+        <div id="loading" class="loading">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">データを読み込んでいます...</p>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div id="content" style="display: none;">
+            <div class="row">
+                <!-- 現在の状況 -->
+                <div class="col-xl-4 col-lg-6 mb-4">
+                    <div class="card metrics-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">📈 現在の状況</h5>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h3 id="currentMarginLevel" class="mb-1">--%</h3>
+                                    <small>証拠金維持率</small>
+                                </div>
+                                <div class="col-6">
+                                    <h3 id="currentPrice" class="mb-1">--円</h3>
+                                    <small>現在価格</small>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <h4 id="totalPnL" class="mb-1">--円</h4>
+                                    <small>合計損益</small>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <h4 id="equity" class="mb-1">--円</h4>
+                                    <small>有効証拠金</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 重要レベル -->
+                <div class="col-xl-4 col-lg-6 mb-4">
+                    <div class="card border-warning h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">⚠️ 重要レベル</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span>マージンコール (100%)</span>
+                                <strong id="marginCallLevel" class="text-danger">--円</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>ストップアウト (50%)</span>
+                                <strong id="stopOutLevel" class="text-danger">--円</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 口座情報 -->
+                <div class="col-xl-4 col-lg-12 mb-4">
+                    <div class="card border-info h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">💰 口座情報</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>口座残高</span>
+                                <strong id="balance">--円</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>必要証拠金</span>
+                                <strong id="requiredMargin">--円</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>レバレッジ</span>
+                                <strong id="leverage">--倍</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 証拠金維持率チャート -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📊 証拠金維持率推移グラフ</h5>
+                            <div class="chart-container">
+                                <canvas id="marginChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ポジション一覧 -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📋 ポジション一覧</h5>
+                            <div id="positionsList">
+                                <!-- ポジションカードがここに動的に生成される -->
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>合計ロット数:</strong>
+                                    <span id="totalLots">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <strong>合計通貨:</strong>
+                                    <span id="totalUnits">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- データテーブル -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📈 価格別分析データ</h5>
+                            <div class="table-responsive" style="max-height: 400px;">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-dark sticky-top">
+                                        <tr>
+                                            <th>レート</th>
+                                            <th>証拠金維持率</th>
+                                            <th>損益</th>
+                                            <th>状態</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="analysisTableBody">
+                                        <!-- テーブルデータがここに動的に生成される -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 更新ボタン -->
+            <div class="row">
+                <div class="col-12 text-center">
+                    <button id="refreshBtn" class="btn btn-primary btn-lg">
+                        <span class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                        🔄 データを更新
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
