@@ -11,17 +11,16 @@ const {
 } = require('./fxUsdJpyAnalyzer');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // ミドルウェア
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-// 静的ファイルの配信
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// 本番環境では React ビルド済みファイルを配信
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/build')));
+}
 
 // FX分析データのAPI
 app.get('/api/fx-analysis', (req, res) => {
@@ -111,9 +110,16 @@ function getRiskLevel(marginLevel) {
 
 // サーバー起動
 app.listen(PORT, () => {
-  console.log(`🚀 FX証拠金分析Webアプリが起動しました`);
-  console.log(`📊 アクセス: http://localhost:${PORT}`);
+  console.log(`🚀 FX証拠金分析APIサーバーが起動しました`);
+  console.log(`📊 APIアクセス: http://localhost:${PORT}/api`);
   console.log(`🔧 開発モード: npm run dev`);
 });
+
+// 本番環境でのReactアプリ配信
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  });
+}
 
 module.exports = app;
