@@ -1,12 +1,17 @@
 import React from 'react';
 import { Card, Table, Badge } from 'react-bootstrap';
+import { AnalysisResult } from '../types';
 
-const AnalysisTable = ({ data }) => {
-  const formatCurrency = (amount) => {
+interface AnalysisTableProps {
+  data: AnalysisResult[];
+}
+
+const AnalysisTable: React.FC<AnalysisTableProps> = ({ data }) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('ja-JP').format(Math.round(amount)) + '円';
   };
 
-  const getRiskClass = (riskLevel) => {
+  const getRiskClass = (riskLevel: AnalysisResult['riskLevel']): string => {
     const classes = {
       'danger': 'risk-danger',
       'warning': 'risk-warning',
@@ -16,7 +21,7 @@ const AnalysisTable = ({ data }) => {
     return classes[riskLevel] || '';
   };
 
-  const getRiskText = (riskLevel) => {
+  const getRiskText = (riskLevel: AnalysisResult['riskLevel']): string => {
     const texts = {
       'danger': '強制決済',
       'warning': '警告',
@@ -26,7 +31,7 @@ const AnalysisTable = ({ data }) => {
     return texts[riskLevel] || '';
   };
 
-  const getRiskBadgeColor = (riskLevel) => {
+  const getRiskBadgeColor = (riskLevel: AnalysisResult['riskLevel']): string => {
     const colors = {
       'danger': 'danger',
       'warning': 'warning',

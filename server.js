@@ -11,7 +11,7 @@ const {
 } = require('./fxUsdJpyAnalyzer');
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 8000;
 
 // ミドルウェア
 app.use(cors());

@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Form, Button } from 'react-bootstrap';
+import { FXData, ConfigData, Position } from '../types';
 
-const ConfigPanel = ({ data, onSave, onCancel }) => {
-  const [config, setConfig] = useState({
-    balance: '',
-    currentPrice: '',
+interface ConfigPanelProps {
+  data: FXData;
+  onSave: (configData: ConfigData) => Promise<void>;
+  onCancel: () => void;
+}
+
+interface ConfigState {
+  balance: number;
+  currentPrice: number;
+  positions: Position[];
+}
+
+const ConfigPanel: React.FC<ConfigPanelProps> = ({ data, onSave, onCancel }) => {
+  const [config, setConfig] = useState<ConfigState>({
+    balance: 0,
+    currentPrice: 0,
     positions: []
   });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     if (data) {
@@ -18,24 +32,24 @@ const ConfigPanel = ({ data, onSave, onCancel }) => {
     }
   }, [data]);
 
-  const handleAccountChange = (field, value) => {
+  const handleAccountChange = (field: 'balance' | 'currentPrice', value: string): void => {
     setConfig(prev => ({
       ...prev,
       [field]: parseFloat(value) || 0
     }));
   };
 
-  const handlePositionChange = (index, field, value) => {
+  const handlePositionChange = (index: number, field: keyof Position, value: string | number): void => {
     setConfig(prev => ({
       ...prev,
       positions: prev.positions.map((pos, i) => 
-        i === index ? { ...pos, [field]: field === 'lots' || field === 'entryPrice' ? parseFloat(value) || 0 : value } : pos
+        i === index ? { ...pos, [field]: field === 'lots' || field === 'entryPrice' ? parseFloat(value.toString()) || 0 : value } : pos
       )
     }));
   };
 
-  const addPosition = () => {
-    const newPosition = {
+  const addPosition = (): void => {
+    const newPosition: Position = {
       id: `pos${config.positions.length + 1}`,
       pair: "USD/JPY",
       side: 'buy',
@@ -51,20 +65,25 @@ const ConfigPanel = ({ data, onSave, onCancel }) => {
     }));
   };
 
-  const removePosition = (index) => {
+  const removePosition = (index: number): void => {
     setConfig(prev => ({
       ...prev,
       positions: prev.positions.filter((_, i) => i !== index)
     }));
   };
 
-  const handleSave = () => {
-    const saveData = {
-      account: { balance: config.balance },
-      currentPrice: config.currentPrice,
-      positions: config.positions
-    };
-    onSave(saveData);
+  const handleSave = async (): Promise<void> => {
+    setSaving(true);
+    try {
+      const saveData: ConfigData = {
+        account: { balance: config.balance },
+        currentPrice: config.currentPrice,
+        positions: config.positions
+      };
+      await onSave(saveData);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -201,8 +220,8 @@ const ConfigPanel = ({ data, onSave, onCancel }) => {
               <Button variant="secondary" onClick={onCancel}>
                 キャンセル
               </Button>
-              <Button variant="primary" onClick={handleSave}>
-                💾 保存して更新
+              <Button variant="primary" onClick={handleSave} disabled={saving}>
+                {saving ? '保存中...' : '💾 保存して更新'}
               </Button>
             </div>
           </Card.Body>

@@ -1,8 +1,13 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
+import { FXData } from '../types';
 
-const AccountInfo = ({ data }) => {
-  const formatCurrency = (amount) => {
+interface AccountInfoProps {
+  data: FXData;
+}
+
+const AccountInfo: React.FC<AccountInfoProps> = ({ data }) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('ja-JP').format(Math.round(amount)) + '円';
   };
 

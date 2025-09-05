@@ -12,6 +12,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { AnalysisResult, CriticalLevels } from '../types';
 
 ChartJS.register(
   CategoryScale,
@@ -24,8 +25,13 @@ ChartJS.register(
   Filler
 );
 
-const MarginChart = ({ data, criticalLevels }) => {
-  const getChartColor = (riskLevel) => {
+interface MarginChartProps {
+  data: AnalysisResult[];
+  criticalLevels: CriticalLevels;
+}
+
+const MarginChart: React.FC<MarginChartProps> = ({ data, criticalLevels }) => {
+  const getChartColor = (riskLevel: AnalysisResult['riskLevel']): string => {
     const colors = {
       'danger': '#dc3545',
       'warning': '#fd7e14',
@@ -56,7 +62,7 @@ const MarginChart = ({ data, criticalLevels }) => {
     }]
   };
 
-  const options = {
+  const options: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -97,9 +103,6 @@ const MarginChart = ({ data, criticalLevels }) => {
       intersect: false,
       mode: 'index'
     },
-    hover: {
-      animationDuration: 0
-    },
     animation: {
       duration: 1000,
       easing: 'easeInOutQuart'
@@ -109,7 +112,7 @@ const MarginChart = ({ data, criticalLevels }) => {
   // 水平線描画プラグイン
   const horizontalLinesPlugin = {
     id: 'horizontalLines',
-    afterDraw: (chart) => {
+    afterDraw: (chart: any) => {
       const ctx = chart.canvas.getContext('2d');
       const yAxis = chart.scales.y;
       

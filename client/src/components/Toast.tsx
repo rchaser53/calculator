@@ -1,7 +1,14 @@
 import React, { useEffect } from 'react';
 import { Alert } from 'react-bootstrap';
+import { ToastData } from '../types';
 
-const Toast = ({ message, type, onClose }) => {
+interface ToastProps {
+  message: string;
+  type: ToastData['type'];
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();

@@ -8,16 +8,17 @@ import PositionsList from './PositionsList';
 import AnalysisTable from './AnalysisTable';
 import ConfigPanel from './ConfigPanel';
 import Toast from './Toast';
+import { FXData, ConfigData, ToastData } from '../types';
 
-const FXAnalyzer = () => {
-  const [data, setData] = useState(null);
-  const [originalData, setOriginalData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showConfig, setShowConfig] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [toast, setToast] = useState(null);
+const FXAnalyzer: React.FC = () => {
+  const [data, setData] = useState<FXData | null>(null);
+  const [originalData, setOriginalData] = useState<FXData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [showConfig, setShowConfig] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [toast, setToast] = useState<ToastData | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
       setLoading(true);
       const response = await fetch('/api/fx-analysis');
@@ -25,13 +26,14 @@ const FXAnalyzer = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const result = await response.json();
+      const result: FXData = await response.json();
       setData(result);
-      setOriginalData(JSON.parse(JSON.stringify(result))); // Deep copy
+      setOriginalData(JSON.parse(JSON.stringify(result)) as FXData); // Deep copy
       setLoading(false);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('データ読み込みエラー:', error);
-      showToast('データの読み込みに失敗しました: ' + error.message, 'error');
+      showToast('データの読み込みに失敗しました: ' + errorMessage, 'error');
       setLoading(false);
     }
   };
@@ -41,17 +43,17 @@ const FXAnalyzer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (): Promise<void> => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
   };
 
-  const toggleConfigPanel = () => {
+  const toggleConfigPanel = (): void => {
     setShowConfig(!showConfig);
   };
 
-  const handleConfigSave = async (configData) => {
+  const handleConfigSave = async (configData: ConfigData): Promise<void> => {
     try {
       const response = await fetch('/api/fx-config', {
         method: 'PUT',
@@ -69,17 +71,20 @@ const FXAnalyzer = () => {
       await loadData();
       setShowConfig(false);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('設定保存エラー:', error);
-      showToast('設定の保存に失敗しました: ' + error.message, 'error');
+      showToast('設定の保存に失敗しました: ' + errorMessage, 'error');
     }
   };
 
-  const handleConfigCancel = () => {
-    setData(JSON.parse(JSON.stringify(originalData)));
+  const handleConfigCancel = (): void => {
+    if (originalData) {
+      setData(JSON.parse(JSON.stringify(originalData)) as FXData);
+    }
     setShowConfig(false);
   };
 
-  const showToast = (message, type) => {
+  const showToast = (message: string, type: ToastData['type']): void => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 5000);
   };
@@ -117,7 +122,7 @@ const FXAnalyzer = () => {
         </Col>
       </Row>
 
-      {showConfig && (
+      {showConfig && data && (
         <ConfigPanel
           data={data}
           onSave={handleConfigSave}

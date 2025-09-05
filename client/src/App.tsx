@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import FXAnalyzer from './components/FXAnalyzer';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
       <FXAnalyzer />

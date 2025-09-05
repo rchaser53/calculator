@@ -1,8 +1,14 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
+import { CurrentAnalysis } from '../types';
 
-const CurrentStatus = ({ data, currentPrice }) => {
-  const formatCurrency = (amount) => {
+interface CurrentStatusProps {
+  data: CurrentAnalysis;
+  currentPrice: number;
+}
+
+const CurrentStatus: React.FC<CurrentStatusProps> = ({ data, currentPrice }) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('ja-JP').format(Math.round(amount)) + '円';
   };
 

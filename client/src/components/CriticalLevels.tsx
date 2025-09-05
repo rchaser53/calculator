@@ -1,7 +1,12 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
+import { CriticalLevels as CriticalLevelsType } from '../types';
 
-const CriticalLevels = ({ data }) => {
+interface CriticalLevelsProps {
+  data: CriticalLevelsType;
+}
+
+const CriticalLevels: React.FC<CriticalLevelsProps> = ({ data }) => {
   return (
     <Card className="border-warning h-100">
       <Card.Body>
