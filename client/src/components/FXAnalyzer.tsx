@@ -8,6 +8,7 @@ import PositionsList from './PositionsList';
 import AnalysisTable from './AnalysisTable';
 import ConfigPanel from './ConfigPanel';
 import Toast from './Toast';
+import SwapCalculator from './SwapCalculator';
 import { FXData, ConfigData, ToastData } from '../types';
 
 const FXAnalyzer: React.FC = () => {
@@ -147,6 +148,12 @@ const FXAnalyzer: React.FC = () => {
           <Row>
             <Col xs={12} className="mb-4">
               <MarginChart data={data.analysisResults} criticalLevels={data.criticalLevels} />
+            </Col>
+          </Row>
+
+          <Row>
+            <Col xs={12} className="mb-4">
+              <SwapCalculator positions={data.positions} />
             </Col>
           </Row>
 

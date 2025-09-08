@@ -11,7 +11,8 @@
       "lots": 10,
       "entryPrice": 147.8,
       "entryDate": "2024-01-15",
-      "comment": "初回買いポジション：10万通貨"
+      "comment": "初回買いポジション：10万通貨",
+      "swapPoint": 1
     },
     {
       "id": "pos2", 
@@ -20,7 +21,8 @@
       "lots": 10,
       "entryPrice": 146.8,
       "entryDate": "2024-01-20",
-      "comment": "追加買いポジション：5万通貨"
+      "comment": "追加買いポジション：5万通貨",
+      "swapPoint": 1
     },
     {
       "id": "pos3",
@@ -29,7 +31,8 @@
       "lots": 10,
       "entryPrice": 145.8,
       "entryDate": "2024-01-25",
-      "comment": "さらなる買い増しポジション：8万通貨"
+      "comment": "さらなる買い増しポジション：8万通貨",
+      "swapPoint": 1
     }
   ],
   "currentPrice": 147,

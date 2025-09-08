@@ -43,7 +43,12 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ data, onSave, onCancel }) => 
     setConfig(prev => ({
       ...prev,
       positions: prev.positions.map((pos, i) => 
-        i === index ? { ...pos, [field]: field === 'lots' || field === 'entryPrice' ? parseFloat(value.toString()) || 0 : value } : pos
+        i === index ? { 
+          ...pos, 
+          [field]: (field === 'lots' || field === 'entryPrice' || field === 'swapPoint') 
+            ? parseFloat(value.toString()) || 0 
+            : value 
+        } : pos
       )
     }));
   };
@@ -56,7 +61,8 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ data, onSave, onCancel }) => 
       lots: 1,
       entryPrice: config.currentPrice,
       entryDate: new Date().toISOString().split('T')[0],
-      comment: ''
+      comment: '',
+      swapPoint: 1
     };
 
     setConfig(prev => ({
@@ -187,7 +193,7 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ data, onSave, onCancel }) => 
                     </Col>
                   </Row>
                   <Row>
-                    <Col md={6}>
+                    <Col md={4}>
                       <Form.Group className="mb-2">
                         <Form.Label>建日</Form.Label>
                         <Form.Control
@@ -197,7 +203,19 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ data, onSave, onCancel }) => 
                         />
                       </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col md={4}>
+                      <Form.Group className="mb-2">
+                        <Form.Label>スワップポイント</Form.Label>
+                        <Form.Control
+                          type="number"
+                          step="0.1"
+                          value={position.swapPoint || 1}
+                          onChange={(e) => handlePositionChange(index, 'swapPoint', e.target.value)}
+                          placeholder="1"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
                       <Form.Group className="mb-2">
                         <Form.Label>コメント</Form.Label>
                         <Form.Control

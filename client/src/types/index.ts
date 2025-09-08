@@ -11,6 +11,7 @@ export interface Position {
   entryPrice: number;
   entryDate?: string;
   comment?: string;
+  swapPoint?: number; // スワップポイント (デフォルト: 1)
 }
 
 export interface PositionDetail {
@@ -21,6 +22,19 @@ export interface PositionDetail {
   units: number;
   pnl: number;
   comment?: string;
+  swapPoint?: number;
+}
+
+export interface SwapCalculation {
+  days: number;
+  dailySwap: number;
+  totalSwap: number;
+  positionSwaps: Array<{
+    id: string;
+    lots: number;
+    dailySwap: number;
+    totalSwap: number;
+  }>;
 }
 
 export interface Settings {
@@ -66,6 +80,7 @@ export interface FXData {
   analysisResults: AnalysisResult[];
   currentAnalysis: CurrentAnalysis;
   criticalLevels: CriticalLevels;
+  swapCalculation?: SwapCalculation;
 }
 
 export interface ConfigData {
