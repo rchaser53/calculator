@@ -3,7 +3,6 @@ import { Container, Row, Col, Button, Spinner } from 'react-bootstrap';
 import CurrentStatus from './CurrentStatus';
 import CriticalLevels from './CriticalLevels';
 import AccountInfo from './AccountInfo';
-import MarginChart from './MarginChart';
 import PositionsList from './PositionsList';
 import AnalysisTable from './AnalysisTable';
 import ConfigPanel from './ConfigPanel';
@@ -142,12 +141,6 @@ const FXAnalyzer: React.FC = () => {
             </Col>
             <Col xl={4} lg={12} className="mb-4">
               <AccountInfo data={data} />
-            </Col>
-          </Row>
-
-          <Row>
-            <Col xs={12} className="mb-4">
-              <MarginChart data={data.analysisResults} criticalLevels={data.criticalLevels} />
             </Col>
           </Row>
 
