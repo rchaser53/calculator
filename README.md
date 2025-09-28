@@ -108,6 +108,31 @@ calculateFromConfig(config, "基本ケース");
 calculateFromConfig(config, 0);
 ```
 
+#### GUI（Web画面）での計算
+
+ローン計算機はWebブラウザ上でも利用できます。美しいグラフィカルインターフェースで計算結果を確認できます。
+
+```bash
+# GUIサーバーを起動（ブラウザで http://localhost:8080/loan-calculator-gui.html を開く）
+npm run loan-serve
+
+# または直接HTTPサーバーを起動
+python3 -m http.server 8080
+```
+
+**GUI機能:**
+- 🎨 **美しいデザイン**: モダンで直感的なユーザーインターface
+- 📊 **リアルタイム計算**: 入力値を変更すると即座に結果を更新
+- 🔧 **設定ファイル連携**: `loan-config.json`からシナリオを読み込み可能
+- 📈 **グラフ表示**: 返済推移を視覚的に確認（Chart.js使用）
+- 📋 **CSV出力**: 計算結果をCSVファイルでダウンロード
+- 📱 **レスポンシブ対応**: スマートフォンやタブレットでも利用可能
+- 🏡 **住宅ローン控除**: 13年間の詳細な控除計算と分析
+
+**アクセス方法:**
+1. `npm run loan-serve` または `python3 -m http.server 8080` でサーバー起動
+2. ブラウザで `http://localhost:8080/loan-calculator-gui.html` を開く
+
 ### FX証拠金維持率監視の使い方
 
 #### 基本的な使い方
@@ -238,6 +263,9 @@ console.log(yearlyData);
 ```bash
 # サンプル計算を実行
 npm start
+
+# GUIを起動（Webブラウザで利用）
+npm run loan-serve
 
 # インタラクティブモード（対話形式で入力）
 npm run interactive

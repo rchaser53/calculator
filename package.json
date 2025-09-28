@@ -11,6 +11,8 @@
     "install-client": "cd client && npm install",
     "heroku-postbuild": "npm run install-client && npm run build",
     "loan": "node loanCalculator.js",
+    "loan-gui": "python3 -m http.server 8080 && open http://localhost:8080/loan-calculator-gui.html",
+    "loan-serve": "python3 -m http.server 8080",
     "interactive": "node interactiveLoanCalculator.js",
     "examples": "node examples.js",
     "fx": "node fxUsdJpyAnalyzer.js"
