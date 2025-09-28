@@ -20,7 +20,9 @@
 
 ## 使い方
 
-### 基本的な使い方
+### ローン計算機
+
+#### 基本的な使い方
 
 ```javascript
 const { displayLoanCalculation } = require('./loanCalculator');
@@ -30,6 +32,80 @@ displayLoanCalculation(3000000, 1.5, 35);
 
 // 住宅ローン控除ありで計算
 displayLoanCalculation(3000000, 1.5, 35, true);
+```
+
+#### 設定ファイルを使用した計算
+
+ローン計算機は、設定ファイル（`loan-config.json`）から設定を読み込んで複数のシナリオを管理できます。
+
+```bash
+# デフォルト設定で計算実行
+node loanCalculator.js
+
+# 利用可能なシナリオ一覧を表示
+node loanCalculator.js --list
+
+# 特定のシナリオを名前で指定して実行
+node loanCalculator.js --scenario "基本ケース"
+
+# 特定のシナリオを番号で指定して実行
+node loanCalculator.js --scenario 1
+
+# 全シナリオを一括実行
+node loanCalculator.js --all
+```
+
+#### 設定ファイル (loan-config.json)
+
+```json
+{
+  "defaultConfig": {
+    "loanAmount": 30000000,
+    "annualRate": 1.5,
+    "years": 35,
+    "hasDeduction": false,
+    "description": "デフォルト設定（3000万円、年利1.5%、35年、住宅ローン控除なし）"
+  },
+  "scenarios": [
+    {
+      "name": "基本ケース",
+      "loanAmount": 30000000,
+      "annualRate": 1.5,
+      "years": 35,
+      "hasDeduction": false,
+      "description": "3000万円、年利1.5%、35年、住宅ローン控除なし"
+    },
+    {
+      "name": "住宅ローン控除適用ケース",
+      "loanAmount": 30000000,
+      "annualRate": 1.5,
+      "years": 35,
+      "hasDeduction": true,
+      "description": "3000万円、年利1.5%、35年、住宅ローン控除あり"
+    }
+  ]
+}
+```
+
+#### プログラムから設定ファイルを使用
+
+```javascript
+const { loadConfig, calculateFromConfig, listScenarios } = require('./loanCalculator');
+
+// 設定ファイルを読み込み
+const config = loadConfig('./loan-config.json');
+
+// シナリオ一覧を表示
+listScenarios(config);
+
+// デフォルト設定で計算
+calculateFromConfig(config);
+
+// 特定のシナリオを名前で指定
+calculateFromConfig(config, "基本ケース");
+
+// 特定のシナリオをインデックスで指定（0から開始）
+calculateFromConfig(config, 0);
 ```
 
 ### FX証拠金維持率監視の使い方
@@ -189,6 +265,26 @@ npm run fx-usdjpy
 ```
 
 ## 関数リファレンス
+
+### `loadConfig(configPath)`
+
+設定ファイルを読み込みます。
+
+- `configPath`: 設定ファイルのパス（省略可、デフォルトは'./loan-config.json'）
+- 戻り値: 設定オブジェクト
+
+### `calculateFromConfig(config, scenarioSelector)`
+
+設定を元にローン計算を実行します。
+
+- `config`: 設定オブジェクト
+- `scenarioSelector`: シナリオ名、インデックス番号、またはnull（デフォルト設定使用）
+
+### `listScenarios(config)`
+
+利用可能なシナリオ一覧を表示します。
+
+- `config`: 設定オブジェクト
 
 ### `calculateMonthlyPayment(loanAmount, annualRate, years)`
 

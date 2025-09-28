@@ -3,6 +3,9 @@
  * ローン金額、金利、年数から月額返済額と年ごとの残金を計算します
  */
 
+const fs = require('fs');
+const path = require('path');
+
 /**
  * 月額返済額を計算する
  * @param {number} loanAmount - ローン金額（元本）
@@ -92,6 +95,105 @@ function calculateYearlyBalance(loanAmount, monthlyPayment, annualRate, years, h
   }
 
   return yearlyData;
+}
+
+/**
+ * 設定ファイルを読み込む
+ * @param {string} configPath - 設定ファイルのパス
+ * @returns {Object} 設定オブジェクト
+ */
+function loadConfig(configPath = './loan-config.json') {
+  try {
+    const configFile = path.resolve(configPath);
+    const configData = fs.readFileSync(configFile, 'utf8');
+    return JSON.parse(configData);
+  } catch (error) {
+    console.error(`設定ファイルの読み込みに失敗しました: ${error.message}`);
+    console.log('デフォルト設定を使用します。');
+    return {
+      defaultConfig: {
+        loanAmount: 30000000,
+        annualRate: 1.5,
+        years: 35,
+        hasDeduction: false,
+        description: 'デフォルト設定（3000万円、年利1.5%、35年、住宅ローン控除なし）'
+      },
+      scenarios: []
+    };
+  }
+}
+
+/**
+ * 設定を元にローン計算を実行する
+ * @param {Object} config - 設定オブジェクト
+ * @param {string|number} scenarioSelector - シナリオ名またはインデックス（省略時はdefaultConfig使用）
+ */
+function calculateFromConfig(config, scenarioSelector = null) {
+  let selectedConfig;
+  
+  if (scenarioSelector === null) {
+    // デフォルト設定を使用
+    selectedConfig = config.defaultConfig;
+    console.log('デフォルト設定を使用します。');
+  } else if (typeof scenarioSelector === 'string') {
+    // シナリオ名で検索
+    const scenario = config.scenarios.find(s => s.name === scenarioSelector);
+    if (scenario) {
+      selectedConfig = scenario;
+      console.log(`シナリオ "${scenarioSelector}" を使用します。`);
+    } else {
+      console.error(`シナリオ "${scenarioSelector}" が見つかりません。`);
+      return;
+    }
+  } else if (typeof scenarioSelector === 'number') {
+    // インデックスで選択
+    if (scenarioSelector >= 0 && scenarioSelector < config.scenarios.length) {
+      selectedConfig = config.scenarios[scenarioSelector];
+      console.log(`シナリオ ${scenarioSelector + 1}: "${selectedConfig.name}" を使用します。`);
+    } else {
+      console.error(`無効なシナリオインデックス: ${scenarioSelector}`);
+      return;
+    }
+  } else {
+    console.error('無効なシナリオセレクタです。');
+    return;
+  }
+  
+  console.log(`設定内容: ${selectedConfig.description}`);
+  console.log('');
+  
+  displayLoanCalculation(
+    selectedConfig.loanAmount,
+    selectedConfig.annualRate,
+    selectedConfig.years,
+    selectedConfig.hasDeduction
+  );
+}
+
+/**
+ * 利用可能なシナリオ一覧を表示する
+ * @param {Object} config - 設定オブジェクト
+ */
+function listScenarios(config) {
+  console.log('='.repeat(60));
+  console.log('                    利用可能なシナリオ一覧');
+  console.log('='.repeat(60));
+  
+  console.log('デフォルト設定:');
+  console.log(`  ${config.defaultConfig.description}`);
+  console.log('');
+  
+  if (config.scenarios.length > 0) {
+    console.log('シナリオ:');
+    config.scenarios.forEach((scenario, index) => {
+      console.log(`  ${index + 1}. ${scenario.name}`);
+      console.log(`     ${scenario.description}`);
+    });
+  } else {
+    console.log('定義済みシナリオはありません。');
+  }
+  
+  console.log('='.repeat(60));
 }
 
 /**
@@ -198,13 +300,57 @@ function displayLoanCalculation(loanAmount, annualRate, years, hasDeduction = fa
 
 // 使用例
 if (require.main === module) {
-  // サンプル計算
-  console.log('サンプル計算例:');
-  displayLoanCalculation(3000000, 1.5, 35); // 3000万円、年利1.5%、35年
+  const args = process.argv.slice(2);
   
-  console.log('\n');
-  console.log('住宅ローン控除適用例:');
-  displayLoanCalculation(3000000, 1.5, 35, true); // 住宅ローン控除あり
+  // 設定ファイルを読み込み
+  const config = loadConfig();
+  
+  // コマンドライン引数の処理
+  if (args.length === 0) {
+    // 引数なし: シナリオ一覧を表示してからデフォルト設定で実行
+    listScenarios(config);
+    console.log('\n');
+    calculateFromConfig(config);
+  } else if (args[0] === '--list' || args[0] === '-l') {
+    // シナリオ一覧表示
+    listScenarios(config);
+  } else if (args[0] === '--scenario' || args[0] === '-s') {
+    // 特定シナリオ実行
+    if (args[1]) {
+      // 数字かどうかチェック
+      const scenarioSelector = isNaN(args[1]) ? args[1] : parseInt(args[1]) - 1;
+      calculateFromConfig(config, scenarioSelector);
+    } else {
+      console.error('シナリオ名またはインデックスを指定してください。');
+      console.log('使用例: node loanCalculator.js --scenario "基本ケース"');
+      console.log('使用例: node loanCalculator.js --scenario 1');
+    }
+  } else if (args[0] === '--all' || args[0] === '-a') {
+    // 全シナリオ実行
+    listScenarios(config);
+    console.log('\n');
+    
+    // デフォルト設定実行
+    calculateFromConfig(config);
+    
+    // 全シナリオ実行
+    config.scenarios.forEach((scenario, index) => {
+      console.log('\n');
+      calculateFromConfig(config, index);
+    });
+  } else {
+    // ヘルプ表示
+    console.log('ローン計算機 - 使用方法:');
+    console.log('  node loanCalculator.js                    # デフォルト設定で実行');
+    console.log('  node loanCalculator.js --list             # シナリオ一覧表示');
+    console.log('  node loanCalculator.js --scenario <名前>   # 特定シナリオ実行');
+    console.log('  node loanCalculator.js --scenario <番号>   # 特定シナリオ実行（番号指定）');
+    console.log('  node loanCalculator.js --all              # 全シナリオ実行');
+    console.log('');
+    console.log('例:');
+    console.log('  node loanCalculator.js --scenario "基本ケース"');
+    console.log('  node loanCalculator.js --scenario 1');
+  }
 }
 
 // 関数をエクスポート
@@ -212,5 +358,8 @@ module.exports = {
   calculateMonthlyPayment,
   calculateYearlyBalance,
   displayLoanCalculation,
-  calculateLoanDeduction
+  calculateLoanDeduction,
+  loadConfig,
+  calculateFromConfig,
+  listScenarios
 };

@@ -1,0 +1,43 @@
+{
+  "defaultConfig": {
+    "loanAmount": 57900000,
+    "annualRate": 1.0,
+    "years": 35,
+    "hasDeduction": true,
+    "description": "デフォルト設定（5790万円、年利1.0%、35年、住宅ローン控除あり）"
+  },
+  "scenarios": [
+    {
+      "name": "基本ケース",
+      "loanAmount": 57900000,
+      "annualRate": 1.5,
+      "years": 35,
+      "hasDeduction": true,
+      "description": "デフォルト設定（5790万円、年利1.0%、35年、住宅ローン控除あり）"
+    },
+    {
+      "name": "住宅ローン控除適用ケース",
+      "loanAmount": 30000000,
+      "annualRate": 1.5,
+      "years": 35,
+      "hasDeduction": true,
+      "description": "3000万円、年利1.5%、35年、住宅ローン控除あり"
+    },
+    {
+      "name": "高額ローンケース",
+      "loanAmount": 50000000,
+      "annualRate": 1.2,
+      "years": 35,
+      "hasDeduction": true,
+      "description": "5000万円、年利1.2%、35年、住宅ローン控除あり"
+    },
+    {
+      "name": "短期ローンケース",
+      "loanAmount": 20000000,
+      "annualRate": 2.0,
+      "years": 20,
+      "hasDeduction": false,
+      "description": "2000万円、年利2.0%、20年、住宅ローン控除なし"
+    }
+  ]
+}
